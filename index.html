@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Our Wedding Gift Registry</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #fefefe;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 4rem;
+    }
+    header {
+      text-align: center;
+      padding: 2rem 1rem;
+    }
+    header img {
+      max-width: 300px;
+      border-radius: 1rem;
+    }
+    h1 {
+      margin-top: 1rem;
+    }
+    .gift-list {
+      max-width: 600px;
+      width: 100%;
+      padding: 1rem;
+    }
+    .gift {
+      border: 1px solid #ccc;
+      padding: 1rem;
+      border-radius: 1rem;
+      margin-bottom: 1rem;
+      background: #fff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+    .gift-info {
+      flex: 1;
+    }
+    .gift button {
+      margin-top: 0.5rem;
+      margin-right: 0.5rem;
+    }
+    .gift img {
+      max-width: 150px;
+      max-height: 150px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      border-radius: 0.5rem;
+      margin-top: 0.5rem;
+    }
+    #addGiftForm {
+      margin-top: 2rem;
+      display: none;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-width: 600px;
+      width: 100%;
+    }
+    input, textarea, button, select {
+      font-size: 1rem;
+      padding: 0.5rem;
+    }
+    #passwordSection {
+      margin: 2rem 0;
+    }
+    .reserved {
+      opacity: 0.6;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="your-photo.jpg" alt="Us" />
+    <h1>Welcome to Our Wedding Gift Registry</h1>
+    <p>We're so excited to celebrate with you! Here are some gift ideas we would love. You can reserve a gift to avoid duplicates.</p>
+  </header>
+
+  <section class="gift-list" id="giftList"></section>
+
+  <section id="passwordSection">
+    <input type="password" id="adminPassword" placeholder="Enter password to edit registry">
+    <button onclick="checkPassword()">Unlock Editing</button>
+  </section>
+
+  <form id="addGiftForm">
+    <h2>Add a Gift</h2>
+    <input type="text" id="giftName" placeholder="Gift name" required>
+    <textarea id="giftDescription" placeholder="Description"></textarea>
+    <input type="url" id="giftLink" placeholder="Link to gift">
+    <input type="url" id="giftImage" placeholder="Image URL (optional)">
+    <label><input type="checkbox" id="giftReservable"> Allow reservation</label>
+    <input type="number" id="giftQuantity" placeholder="Quantity (default 1)" min="1">
+    <button type="button" onclick="addGift()">Add Gift</button>
+  </form>
+
+  <script>
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzWTbhh3kXF4Wd-dU_SGpqiZny6pGUt7uz6VkgZcy6QpigjVSv-D6BzDuHG_6PeoCOp/exec';
+    const adminPassword = "your-password";  // Change this to your desired admin password
+    let gifts = [];
+    let editingEnabled = false;
+
+    async function fetchGifts() {
+      try {
+        const res = await fetch(API_URL);
+        gifts = await res.json();
+        renderGifts();
+      } catch (err) {
+        alert("Failed to load gift list.");
+        console.error(err);
+      }
+    }
+
+    async function saveGifts() {
+      await fetch(API_URL + '?action=setAll', {
+        method: 'POST',
+        body: JSON.stringify(gifts),
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    function renderGifts() {
+      const list = document.getElementById('giftList');
+      list.innerHTML = '';
+      gifts.forEach((gift, index) => {
+        const remaining = gift.quantity ? gift.quantity - (gift.reservedBy?.length || 0) : 1;
+        const div = document.createElement('div');
+        div.className = 'gift' + (remaining === 0 ? ' reserved' : '');
+        div.innerHTML = `
+          <div class="gift-info">
+            <h3>${gift.name}</h3>
+            <p>${gift.description || ''}</p>
+            ${gift.link ? `<p><a href="${gift.link}" target="_blank">View Gift</a></p>` : ''}
+            ${gift.reservable ? `<p>Remaining: <strong>${remaining}</strong> / ${gift.quantity || 1}</p>` : ''}
+            ${gift.reservable && remaining > 0 ? `<button onclick="reserveGift(${index})">Reserve This Gift</button>` : ''}
+            ${gift.reservable && gift.reservedBy?.length ? `<button onclick="attemptUnreserve(${index})">Unreserve</button>` : ''}
+            ${editingEnabled ? `<button onclick="editGift(${index})">Edit</button><button onclick="deleteGift(${index})">Delete</button>` : ''}
+          </div>
+          ${gift.image ? `<img src="${gift.image}" alt="Gift image">` : ''}
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    function reserveGift(index) {
+      const name = prompt("Enter your name to reserve this gift:");
+      if (name) {
+        if (!Array.isArray(gifts[index].reservedBy)) gifts[index].reservedBy = [];
+        gifts[index].reservedBy.push(name.trim());
+        saveGifts().then(fetchGifts);
+      }
+    }
+
+    function attempt
+::contentReference[oaicite:12]{index=12}
+ 
