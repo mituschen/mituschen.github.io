@@ -5,106 +5,168 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Our Wedding Gift Registry</title>
   <style>
+    :root {
+      --primary: #4a90e2;
+      --bg: #f9f9f9;
+      --text: #222;
+      --muted: #777;
+      --card-bg: #fff;
+    }
     body {
-      font-family: sans-serif;
-      background: #fefefe;
+      font-family: "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
       margin: 0;
       padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding-bottom: 4rem;
     }
-    header {
+    header.hero {
+      position: relative;
+      width: 100%;
+      height: 260px;
+      overflow: hidden;
+    }
+    header.hero img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .hero-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       text-align: center;
-      padding: 2rem 1rem;
-    }
-    header img {
-      max-width: 300px;
+      color: white;
+      background: rgba(0,0,0,0.4);
+      padding: 1rem 2rem;
       border-radius: 1rem;
     }
-    h1 {
-      margin-top: 1rem;
+    .content {
+      max-width: 700px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    h1, h2 {
+      margin-top: 0;
     }
     .gift-list {
-      max-width: 600px;
-      width: 100%;
-      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
     }
     .gift {
-      border: 1px solid #ccc;
-      padding: 1rem;
+      background: var(--card-bg);
       border-radius: 1rem;
-      margin-bottom: 1rem;
-      background: #fff;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      padding: 1rem;
       display: flex;
-      justify-content: space-between;
-      align-items: center;
       gap: 1rem;
+      align-items: flex-start;
+      transition: transform 0.2s ease;
+    }
+    .gift:hover {
+      transform: translateY(-2px);
+    }
+    .gift img {
+      max-width: 120px;
+      max-height: 120px;
+      object-fit: cover;
+      border-radius: 0.5rem;
     }
     .gift-info {
       flex: 1;
     }
+    .gift-info h3 {
+      margin: 0 0 0.2rem;
+    }
+    .gift-info p {
+      margin: 0.25rem 0;
+      font-size: 0.95rem;
+    }
     .gift button {
-      margin-top: 0.5rem;
-      margin-right: 0.5rem;
-    }
-    .gift img {
-      max-width: 150px;
-      max-height: 150px;
-      object-fit: contain;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.4rem 0.8rem;
       border-radius: 0.5rem;
-      margin-top: 0.5rem;
+      margin-right: 0.5rem;
+      cursor: pointer;
     }
-    #addGiftForm {
-      margin-top: 2rem;
-      display: none;
-      flex-direction: column;
-      gap: 0.5rem;
-      max-width: 600px;
-      width: 100%;
-    }
-    input, textarea, button {
-      font-size: 1rem;
-      padding: 0.5rem;
-    }
-    #passwordSection {
-      margin: 2rem 0;
+    .gift button:hover {
+      background-color: #3a7ed9;
     }
     .reserved {
       opacity: 0.6;
     }
+    form, #passwordSection {
+      margin-top: 2rem;
+      background: var(--card-bg);
+      padding: 1rem;
+      border-radius: 1rem;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+    }
+    input, textarea {
+      width: 100%;
+      padding: 0.5rem;
+      margin-bottom: 0.75rem;
+      border-radius: 0.4rem;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+    }
+    label {
+      font-size: 0.95rem;
+      margin-bottom: 0.5rem;
+    }
+    button[type="submit"],
+    #unlockButton {
+      width: 100%;
+      padding: 0.6rem;
+      font-size: 1rem;
+    }
+    @media (max-width: 600px) {
+      .gift {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .gift img {
+        margin-bottom: 0.5rem;
+      }
+    }
   </style>
 </head>
 <body>
-  <header>
-    <img src="your-photo.jpg" alt="Us" />
-    <h1>Welcome to Our Wedding Gift Registry</h1>
-    <p>We're so excited to celebrate with you! Here are some gift ideas we would love. You can reserve a gift to avoid duplicates.</p>
+  <header class="hero">
+    <img src="header.jpg" alt="Us" />
+    <div class="hero-text">
+      <h1>Our Wedding Gift Registry</h1>
+      <p>We’re so excited to celebrate with you 💕</p>
+    </div>
   </header>
 
-  <section class="gift-list" id="giftList"></section>
+  <div class="content">
+    <section class="gift-list" id="giftList"></section>
 
-  <section id="passwordSection">
-    <input type="password" id="adminPassword" placeholder="Enter password to edit registry">
-    <button id="unlockButton">Unlock Editing</button>
-  </section>
+    <section id="passwordSection">
+      <input type="password" id="adminPassword" placeholder="Enter password to edit registry">
+      <button id="unlockButton">Unlock Editing</button>
+    </section>
 
-  <form id="addGiftForm">
-    <h2>Add a Gift</h2>
-    <input type="text" id="giftName" placeholder="Gift name" required>
-    <textarea id="giftDescription" placeholder="Description"></textarea>
-    <input type="url" id="giftLink" placeholder="Link to gift">
-    <input type="url" id="giftImage" placeholder="Image URL (optional)">
-    <label><input type="checkbox" id="giftReservable"> Allow reservation</label>
-    <input type="number" id="giftQuantity" placeholder="Quantity (default 1)" min="1">
-    <button type="submit">Add Gift</button>
-  </form>
+    <form id="addGiftForm" style="display:none;">
+      <h2>Add a Gift</h2>
+      <input type="text" id="giftName" placeholder="Gift name" required />
+      <textarea id="giftDescription" placeholder="Description"></textarea>
+      <input type="url" id="giftLink" placeholder="Link to gift" />
+      <input type="url" id="giftImage" placeholder="Image URL (optional)" />
+      <label><input type="checkbox" id="giftReservable" /> Allow reservation</label>
+      <input type="number" id="giftQuantity" placeholder="Quantity (default 1)" min="1" />
+      <button type="submit">Add Gift</button>
+    </form>
+  </div>
 
-  <!-- Firebase SDKs -->
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const firebaseConfig = {
@@ -122,9 +184,8 @@
       const giftsRef = db.ref("gifts");
 
       let editingEnabled = false;
-      const adminPassword = "your-password"; // Replace with your actual password
+      const adminPassword = "your-password"; // Change this
 
-      // Live render
       giftsRef.on("value", snapshot => {
         const data = snapshot.val() || [];
         renderGifts(data);
@@ -142,38 +203,34 @@
           div.className = 'gift' + (remaining === 0 ? ' reserved' : '');
 
           div.innerHTML = `
+            ${gift.image ? `<img src="${gift.image}" alt="Gift image" />` : ''}
             <div class="gift-info">
               <h3>${gift.name}</h3>
               <p>${gift.description || ''}</p>
               ${gift.link ? `<p><a href="${gift.link}" target="_blank">View Gift</a></p>` : ''}
-              ${gift.reservable ? `<p>Remaining: <strong>${remaining}</strong> / ${gift.quantity || 1}</p>` : ''}
+              ${gift.reservable ? `<p><strong>${remaining}</strong> of ${gift.quantity || 1} remaining</p>` : ''}
               ${gift.reservable && remaining > 0 ? `<button onclick="reserveGift(${index})">Reserve</button>` : ''}
               ${gift.reservable && gift.reservedBy?.length ? `<button onclick="unreserveGift(${index})">Unreserve</button>` : ''}
-              ${editingEnabled ? `<button onclick="editGift(${index})">Edit</button><button onclick="deleteGift(${index})">Delete</button>` : ''}
+              ${editingEnabled ? `<button onclick="editGift(${index})">Edit</button> <button onclick="deleteGift(${index})">Delete</button>` : ''}
             </div>
-            ${gift.image ? `<img src="${gift.image}" alt="Gift image">` : ''}
           `;
-
           list.appendChild(div);
         });
       }
 
-      // 🔓 Unlock Editing
       document.getElementById('unlockButton').addEventListener('click', () => {
         const input = document.getElementById('adminPassword').value;
         if (input === adminPassword) {
           editingEnabled = true;
-          document.getElementById('addGiftForm').style.display = 'flex';
+          document.getElementById('addGiftForm').style.display = 'block';
           alert("Editing enabled");
         } else {
           alert("Incorrect password");
         }
       });
 
-      // ➕ Add Gift
       document.getElementById('addGiftForm').addEventListener('submit', e => {
         e.preventDefault();
-
         const name = document.getElementById('giftName').value;
         const description = document.getElementById('giftDescription').value;
         const link = document.getElementById('giftLink').value;
@@ -190,11 +247,9 @@
         e.target.reset();
       });
 
-      // Reserve
       window.reserveGift = index => {
-        const name = prompt("Enter your name to reserve:");
+        const name = prompt("Your name to reserve:");
         if (!name) return;
-
         giftsRef.once("value", snapshot => {
           const current = snapshot.val() || [];
           if (!Array.isArray(current[index].reservedBy)) current[index].reservedBy = [];
@@ -203,11 +258,9 @@
         });
       };
 
-      // Unreserve
       window.unreserveGift = index => {
-        const name = prompt("Enter the name to unreserve:");
+        const name = prompt("Enter name to unreserve:");
         if (!name) return;
-
         giftsRef.once("value", snapshot => {
           const current = snapshot.val() || [];
           current[index].reservedBy = current[index].reservedBy?.filter(n => n !== name.trim()) || [];
@@ -215,7 +268,6 @@
         });
       };
 
-      // Delete
       window.deleteGift = index => {
         if (!confirm("Delete this gift?")) return;
         giftsRef.once("value", snapshot => {
@@ -225,7 +277,6 @@
         });
       };
 
-      // Edit
       window.editGift = index => {
         giftsRef.once("value", snapshot => {
           const current = snapshot.val() || [];
