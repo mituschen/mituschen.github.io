@@ -119,12 +119,11 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
     const giftsRef = db.ref("gifts");
-    let editingEnabled = false;
-    const adminPassword = "your-password";
 
-    // Read data and render
+    let editingEnabled = false;
+    const adminPassword = "your-password"; // Change this to your real password
+
     giftsRef.on("value", snapshot => {
       const data = snapshot.val() || [];
       renderGifts(data);
