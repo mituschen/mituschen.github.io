@@ -52,6 +52,8 @@
     .gift img {
       max-width: 150px;
       max-height: 150px;
+      width: auto;
+      height: auto;
       object-fit: contain;
       border-radius: 0.5rem;
       margin-top: 0.5rem;
@@ -64,7 +66,7 @@
       max-width: 600px;
       width: 100%;
     }
-    input, textarea, button {
+    input, textarea, button, select {
       font-size: 1rem;
       padding: 0.5rem;
     }
@@ -78,7 +80,7 @@
 </head>
 <body>
   <header>
-    <img src="your-photo.jpg" alt="Us" />
+    <img src="header.jpg" alt="Us" />
     <h1>Welcome to Our Wedding Gift Registry</h1>
     <p>We're so excited to celebrate with you! Here are some gift ideas we would love. You can reserve a gift to avoid duplicates.</p>
   </header>
@@ -101,7 +103,7 @@
     <button type="submit">Add Gift</button>
   </form>
 
-  <!-- Firebase SDKs -->
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
@@ -122,9 +124,8 @@
       const giftsRef = db.ref("gifts");
 
       let editingEnabled = false;
-      const adminPassword = "your-password"; // Replace with your actual password
+      const adminPassword = "your-password"; // Replace this
 
-      // Live render
       giftsRef.on("value", snapshot => {
         const data = snapshot.val() || [];
         renderGifts(data);
@@ -133,14 +134,12 @@
       function renderGifts(gifts) {
         const list = document.getElementById('giftList');
         list.innerHTML = '';
-
         gifts.forEach((gift, index) => {
           const reservedCount = gift.reservedBy ? gift.reservedBy.length : 0;
           const remaining = gift.quantity ? gift.quantity - reservedCount : 1;
 
           const div = document.createElement('div');
           div.className = 'gift' + (remaining === 0 ? ' reserved' : '');
-
           div.innerHTML = `
             <div class="gift-info">
               <h3>${gift.name}</h3>
@@ -153,12 +152,10 @@
             </div>
             ${gift.image ? `<img src="${gift.image}" alt="Gift image">` : ''}
           `;
-
           list.appendChild(div);
         });
       }
 
-      // 🔓 Unlock Editing
       document.getElementById('unlockButton').addEventListener('click', () => {
         const input = document.getElementById('adminPassword').value;
         if (input === adminPassword) {
@@ -170,10 +167,8 @@
         }
       });
 
-      // ➕ Add Gift
       document.getElementById('addGiftForm').addEventListener('submit', e => {
         e.preventDefault();
-
         const name = document.getElementById('giftName').value;
         const description = document.getElementById('giftDescription').value;
         const link = document.getElementById('giftLink').value;
@@ -190,11 +185,9 @@
         e.target.reset();
       });
 
-      // Reserve
       window.reserveGift = index => {
-        const name = prompt("Enter your name to reserve:");
+        const name = prompt("Enter your name to reserve this gift:");
         if (!name) return;
-
         giftsRef.once("value", snapshot => {
           const current = snapshot.val() || [];
           if (!Array.isArray(current[index].reservedBy)) current[index].reservedBy = [];
@@ -203,11 +196,9 @@
         });
       };
 
-      // Unreserve
       window.unreserveGift = index => {
         const name = prompt("Enter the name to unreserve:");
         if (!name) return;
-
         giftsRef.once("value", snapshot => {
           const current = snapshot.val() || [];
           current[index].reservedBy = current[index].reservedBy?.filter(n => n !== name.trim()) || [];
@@ -215,7 +206,6 @@
         });
       };
 
-      // Delete
       window.deleteGift = index => {
         if (!confirm("Delete this gift?")) return;
         giftsRef.once("value", snapshot => {
@@ -225,18 +215,17 @@
         });
       };
 
-      // Edit
       window.editGift = index => {
         giftsRef.once("value", snapshot => {
           const current = snapshot.val() || [];
           const gift = current[index];
 
-          const name = prompt("Edit name:", gift.name);
+          const name = prompt("Edit gift name:", gift.name);
           const description = prompt("Edit description:", gift.description);
           const link = prompt("Edit link:", gift.link);
           const image = prompt("Edit image URL:", gift.image);
           const reservable = confirm("Is this gift reservable?");
-          const quantity = parseInt(prompt("Quantity:", gift.quantity || 1));
+          const quantity = parseInt(prompt("Enter quantity:", gift.quantity || 1));
 
           current[index] = {
             ...gift,
