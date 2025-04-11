@@ -52,8 +52,6 @@
     .gift img {
       max-width: 150px;
       max-height: 150px;
-      width: auto;
-      height: auto;
       object-fit: contain;
       border-radius: 0.5rem;
       margin-top: 0.5rem;
@@ -66,7 +64,7 @@
       max-width: 600px;
       width: 100%;
     }
-    input, textarea, button, select {
+    input, textarea, button {
       font-size: 1rem;
       padding: 0.5rem;
     }
@@ -100,66 +98,155 @@
     <input type="url" id="giftImage" placeholder="Image URL (optional)">
     <label><input type="checkbox" id="giftReservable"> Allow reservation</label>
     <input type="number" id="giftQuantity" placeholder="Quantity (default 1)" min="1">
-    <button type="button" onclick="addGift()">Add Gift</button>
+    <button type="submit">Add Gift</button>
   </form>
 
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
   <script>
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxHw12oV9_GWXESrAg34hxHy--JmaUJNU9Q3gF5yKjwzzumNMjTNagYhgl4fSv9xGMl/exec';
-    const adminPassword = "your-password";  // Change this to your desired admin password
-    let gifts = [];
+    const firebaseConfig = {
+      apiKey: "AIzaSyAHbonqdNhGhu4voImagoXTLKM6h6fryj4",
+      authDomain: "wedding-registry-714e5.firebaseapp.com",
+      databaseURL: "https://wedding-registry-714e5-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "wedding-registry-714e5",
+      storageBucket: "wedding-registry-714e5.firebasestorage.app",
+      messagingSenderId: "199927981848",
+      appId: "1:199927981848:web:f89bc0f9c74e5b7db2606d",
+      measurementId: "G-RNPWKRNCMK"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const giftsRef = db.ref("gifts");
     let editingEnabled = false;
+    const adminPassword = "your-password";
 
-    async function fetchGifts() {
-      try {
-        const res = await fetch(API_URL);
-        gifts = await res.json();
-        renderGifts();
-      } catch (err) {
-        alert("Failed to load gift list.");
-        console.error(err);
-      }
-    }
+    // Read data and render
+    giftsRef.on("value", snapshot => {
+      const data = snapshot.val() || [];
+      renderGifts(data);
+    });
 
-    async function saveGifts() {
-      await fetch(API_URL + '?action=setAll', {
-        method: 'POST',
-        body: JSON.stringify(gifts),
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
-    function renderGifts() {
+    function renderGifts(gifts) {
       const list = document.getElementById('giftList');
       list.innerHTML = '';
+
       gifts.forEach((gift, index) => {
-        const remaining = gift.quantity ? gift.quantity - (gift.reservedBy?.length || 0) : 1;
+        const reservedCount = gift.reservedBy ? gift.reservedBy.length : 0;
+        const remaining = gift.quantity ? gift.quantity - reservedCount : 1;
+
         const div = document.createElement('div');
         div.className = 'gift' + (remaining === 0 ? ' reserved' : '');
+
         div.innerHTML = `
           <div class="gift-info">
             <h3>${gift.name}</h3>
             <p>${gift.description || ''}</p>
             ${gift.link ? `<p><a href="${gift.link}" target="_blank">View Gift</a></p>` : ''}
             ${gift.reservable ? `<p>Remaining: <strong>${remaining}</strong> / ${gift.quantity || 1}</p>` : ''}
-            ${gift.reservable && remaining > 0 ? `<button onclick="reserveGift(${index})">Reserve This Gift</button>` : ''}
-            ${gift.reservable && gift.reservedBy?.length ? `<button onclick="attemptUnreserve(${index})">Unreserve</button>` : ''}
+            ${gift.reservable && remaining > 0 ? `<button onclick="reserveGift(${index})">Reserve</button>` : ''}
+            ${gift.reservable && gift.reservedBy?.length ? `<button onclick="unreserveGift(${index})">Unreserve</button>` : ''}
             ${editingEnabled ? `<button onclick="editGift(${index})">Edit</button><button onclick="deleteGift(${index})">Delete</button>` : ''}
           </div>
           ${gift.image ? `<img src="${gift.image}" alt="Gift image">` : ''}
         `;
+
         list.appendChild(div);
       });
     }
 
-    function reserveGift(index) {
-      const name = prompt("Enter your name to reserve this gift:");
-      if (name) {
-        if (!Array.isArray(gifts[index].reservedBy)) gifts[index].reservedBy = [];
-        gifts[index].reservedBy.push(name.trim());
-        saveGifts().then(fetchGifts);
+    function checkPassword() {
+      const input = document.getElementById('adminPassword').value;
+      if (input === adminPassword) {
+        editingEnabled = true;
+        document.getElementById('addGiftForm').style.display = 'flex';
+        alert("Editing enabled");
+        giftsRef.once('value', snap => renderGifts(snap.val() || []));
+      } else {
+        alert("Incorrect password");
       }
     }
 
-    function attempt
-::contentReference[oaicite:12]{index=12}
- 
+    document.getElementById('addGiftForm').addEventListener('submit', e => {
+      e.preventDefault();
+
+      const name = document.getElementById('giftName').value;
+      const description = document.getElementById('giftDescription').value;
+      const link = document.getElementById('giftLink').value;
+      const image = document.getElementById('giftImage').value;
+      const reservable = document.getElementById('giftReservable').checked;
+      const quantity = parseInt(document.getElementById('giftQuantity').value) || 1;
+
+      giftsRef.once("value", snapshot => {
+        const current = snapshot.val() || [];
+        current.push({ name, description, link, image, reservable, quantity, reservedBy: [] });
+        giftsRef.set(current);
+      });
+
+      e.target.reset();
+    });
+
+    function reserveGift(index) {
+      const name = prompt("Enter your name to reserve this gift:");
+      if (!name) return;
+
+      giftsRef.once("value", snapshot => {
+        const current = snapshot.val() || [];
+        if (!Array.isArray(current[index].reservedBy)) current[index].reservedBy = [];
+        current[index].reservedBy.push(name.trim());
+        giftsRef.set(current);
+      });
+    }
+
+    function unreserveGift(index) {
+      const name = prompt("Enter the name under which the gift was reserved:");
+      if (!name) return;
+
+      giftsRef.once("value", snapshot => {
+        const current = snapshot.val() || [];
+        current[index].reservedBy = current[index].reservedBy?.filter(n => n !== name.trim()) || [];
+        giftsRef.set(current);
+      });
+    }
+
+    function deleteGift(index) {
+      if (!confirm("Delete this gift?")) return;
+      giftsRef.once("value", snapshot => {
+        const current = snapshot.val() || [];
+        current.splice(index, 1);
+        giftsRef.set(current);
+      });
+    }
+
+    function editGift(index) {
+      giftsRef.once("value", snapshot => {
+        const current = snapshot.val() || [];
+        const gift = current[index];
+
+        const name = prompt("Edit gift name:", gift.name);
+        const description = prompt("Edit description:", gift.description);
+        const link = prompt("Edit link:", gift.link);
+        const image = prompt("Edit image URL:", gift.image);
+        const reservable = confirm("Is this gift reservable?");
+        const quantity = parseInt(prompt("Quantity:", gift.quantity || 1));
+
+        current[index] = {
+          ...gift,
+          name: name || gift.name,
+          description: description || gift.description,
+          link: link || gift.link,
+          image: image || gift.image,
+          reservable,
+          quantity: quantity > 0 ? quantity : 1,
+          reservedBy: reservable ? gift.reservedBy || [] : []
+        };
+
+        giftsRef.set(current);
+      });
+    }
+  </script>
+</body>
+</html>
