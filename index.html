@@ -135,7 +135,7 @@
     const giftsRef = db.ref("gifts");
 
     let editingEnabled = false;
-    const adminPassword = "rorymasters2025";
+    // Removed hardcoded password
 
     giftsRef.on("value", snapshot => {
       const data = snapshot.val() || [];
@@ -171,15 +171,19 @@
     }
 
     document.getElementById('unlockButton').addEventListener('click', () => {
-      const input = document.getElementById('adminPassword').value;
-      if (input === adminPassword) {
-        editingEnabled = true;
-        document.getElementById('addGiftForm').style.display = 'flex';
-        alert("Editing enabled");
-      } else {
-        alert("Incorrect password");
-      }
-    });
+  const input = document.getElementById('adminPassword').value;
+
+  firebase.database().ref("admin/password").once("value").then(snapshot => {
+    const storedPassword = snapshot.val();
+    if (input === storedPassword) {
+      editingEnabled = true;
+      document.getElementById('addGiftForm').style.display = 'flex';
+      alert("Editing enabled");
+    } else {
+      alert("Incorrect password");
+    }
+  });
+});
 
     document.getElementById('addGiftForm').addEventListener('submit', e => {
       e.preventDefault();
